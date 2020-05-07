@@ -100,16 +100,26 @@ paths:
           description: '{string} delete success!'
         "403":
           description: objectId is empty
-  /umb/{id}:
+  /umb/:
     get:
       tags:
       - umb
       description: get Umb by id
       operationId: UmbController.Get One
       parameters:
-      - in: path
-        name: id
-        description: The key for staticblock
+      - in: query
+        name: MSISDN
+        description: MSISDN
+        required: true
+        type: string
+      - in: query
+        name: mid
+        description: mid
+        required: true
+        type: string
+      - in: query
+        name: sc
+        description: sc
         required: true
         type: string
       responses:
@@ -118,7 +128,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Umb'
         "403":
-          description: :id is empty
+          description: MSISDN is empty
   /user/:
     get:
       tags:
@@ -238,12 +248,56 @@ paths:
         "200":
           description: '{string} logout success'
 definitions:
-  1136.0xc00033bad0.false:
-    title: "false"
+  models.Event:
+    title: Event
     type: object
-  1330.0xc00033bb60.false:
-    title: "false"
+    properties:
+      Opcode:
+        type: string
+      Status:
+        type: string
+      Statuscode:
+        type: string
+      Text:
+        type: string
+  models.Item:
+    title: Item
     type: object
+    properties:
+      Action:
+        type: string
+      DeliveryMode:
+        type: string
+      Number:
+        type: string
+      Tariffrate:
+        type: string
+      Tarifftype:
+        type: string
+      Text:
+        type: string
+      URL:
+        type: string
+  models.Menu:
+    title: Menu
+    type: object
+    properties:
+      Item:
+        type: array
+        items:
+          $ref: '#/definitions/models.Item'
+      Menuheader1:
+        type: string
+      Menuheader2:
+        type: string
+      Menuname:
+        type: string
+      Tariffrate:
+        type: string
+      Tarifftype:
+        type: string
+      Text:
+        type: string
   models.Object:
     title: Object
     type: object
@@ -273,9 +327,9 @@ definitions:
     type: object
     properties:
       Event:
-        $ref: '#/definitions/1136.0xc00033bad0.false'
+        $ref: '#/definitions/models.Event'
       Menu:
-        $ref: '#/definitions/1330.0xc00033bb60.false'
+        $ref: '#/definitions/models.Menu'
       Text:
         type: string
       XMLName:

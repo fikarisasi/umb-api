@@ -12,20 +12,18 @@ type UmbController struct {
 	beego.Controller
 }
 
-// URLMapping ...
-func (c *UmbController) URLMapping() {
-	c.Mapping("GetOne", c.GetOne)
-}
-
 // GetOne ...
 // @Title Get One
 // @Description get Umb by id
-// @Param	id		path 	string	true		"The key for staticblock"
+// @Param	MSISDN		query 	string	true		"MSISDN"
+// @Param	mid		query 	string	true		"mid"
+// @Param	sc		query 	string	true		"sc"
 // @Success 200 {object} models.Umb
-// @Failure 403 :id is empty
-// @router /:id [get]
+// @Failure 403 MSISDN is empty
+// @router / [get]
 func (c *UmbController) GetOne() {
-	idStr := c.Ctx.Input.Param(":id")
+	idStr := c.Ctx.Input.Query("MSISDN")
+	beego.Info(idStr)
 	id, _ := strconv.ParseInt(idStr, 0, 64)
 	v, err := models.GetUmbById(id)
 	if err != nil {

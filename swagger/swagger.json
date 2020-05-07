@@ -150,7 +150,7 @@
                 }
             }
         },
-        "/umb/{id}": {
+        "/umb/": {
             "get": {
                 "tags": [
                     "umb"
@@ -159,9 +159,23 @@
                 "operationId": "UmbController.Get One",
                 "parameters": [
                     {
-                        "in": "path",
-                        "name": "id",
-                        "description": "The key for staticblock",
+                        "in": "query",
+                        "name": "MSISDN",
+                        "description": "MSISDN",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "mid",
+                        "description": "mid",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "sc",
+                        "description": "sc",
                         "required": true,
                         "type": "string"
                     }
@@ -174,7 +188,7 @@
                         }
                     },
                     "403": {
-                        "description": ":id is empty"
+                        "description": "MSISDN is empty"
                     }
                 }
             }
@@ -360,13 +374,80 @@
         }
     },
     "definitions": {
-        "1136.0xc00033bad0.false": {
-            "title": "false",
-            "type": "object"
+        "models.Event": {
+            "title": "Event",
+            "type": "object",
+            "properties": {
+                "Opcode": {
+                    "type": "string"
+                },
+                "Status": {
+                    "type": "string"
+                },
+                "Statuscode": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                }
+            }
         },
-        "1330.0xc00033bb60.false": {
-            "title": "false",
-            "type": "object"
+        "models.Item": {
+            "title": "Item",
+            "type": "object",
+            "properties": {
+                "Action": {
+                    "type": "string"
+                },
+                "DeliveryMode": {
+                    "type": "string"
+                },
+                "Number": {
+                    "type": "string"
+                },
+                "Tariffrate": {
+                    "type": "string"
+                },
+                "Tarifftype": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                },
+                "URL": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Menu": {
+            "title": "Menu",
+            "type": "object",
+            "properties": {
+                "Item": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Item"
+                    }
+                },
+                "Menuheader1": {
+                    "type": "string"
+                },
+                "Menuheader2": {
+                    "type": "string"
+                },
+                "Menuname": {
+                    "type": "string"
+                },
+                "Tariffrate": {
+                    "type": "string"
+                },
+                "Tarifftype": {
+                    "type": "string"
+                },
+                "Text": {
+                    "type": "string"
+                }
+            }
         },
         "models.Object": {
             "title": "Object",
@@ -408,10 +489,10 @@
             "type": "object",
             "properties": {
                 "Event": {
-                    "$ref": "#/definitions/1136.0xc00033bad0.false"
+                    "$ref": "#/definitions/models.Event"
                 },
                 "Menu": {
-                    "$ref": "#/definitions/1330.0xc00033bb60.false"
+                    "$ref": "#/definitions/models.Menu"
                 },
                 "Text": {
                     "type": "string"
