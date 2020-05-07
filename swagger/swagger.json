@@ -150,6 +150,35 @@
                 }
             }
         },
+        "/umb/{id}": {
+            "get": {
+                "tags": [
+                    "umb"
+                ],
+                "description": "get Umb by id",
+                "operationId": "UmbController.Get One",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "description": "The key for staticblock",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Umb"
+                        }
+                    },
+                    "403": {
+                        "description": ":id is empty"
+                    }
+                }
+            }
+        },
         "/user/": {
             "get": {
                 "tags": [
@@ -331,6 +360,14 @@
         }
     },
     "definitions": {
+        "1136.0xc00033bad0.false": {
+            "title": "false",
+            "type": "object"
+        },
+        "1330.0xc00033bb60.false": {
+            "title": "false",
+            "type": "object"
+        },
         "models.Object": {
             "title": "Object",
             "type": "object",
@@ -366,6 +403,24 @@
                 }
             }
         },
+        "models.Umb": {
+            "title": "Umb",
+            "type": "object",
+            "properties": {
+                "Event": {
+                    "$ref": "#/definitions/1136.0xc00033bad0.false"
+                },
+                "Menu": {
+                    "$ref": "#/definitions/1330.0xc00033bb60.false"
+                },
+                "Text": {
+                    "type": "string"
+                },
+                "XMLName": {
+                    "$ref": "#/definitions/xml.Name"
+                }
+            }
+        },
         "models.User": {
             "title": "User",
             "type": "object",
@@ -383,6 +438,10 @@
                     "type": "string"
                 }
             }
+        },
+        "xml.Name": {
+            "title": "Name",
+            "type": "object"
         }
     },
     "tags": [
@@ -393,6 +452,10 @@
         {
             "name": "user",
             "description": "Operations about Users\n"
+        },
+        {
+            "name": "umb",
+            "description": " UmbController operations for Umb\n"
         }
     ]
 }

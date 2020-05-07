@@ -100,6 +100,25 @@ paths:
           description: '{string} delete success!'
         "403":
           description: objectId is empty
+  /umb/{id}:
+    get:
+      tags:
+      - umb
+      description: get Umb by id
+      operationId: UmbController.Get One
+      parameters:
+      - in: path
+        name: id
+        description: The key for staticblock
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.Umb'
+        "403":
+          description: :id is empty
   /user/:
     get:
       tags:
@@ -219,6 +238,12 @@ paths:
         "200":
           description: '{string} logout success'
 definitions:
+  1136.0xc00033bad0.false:
+    title: "false"
+    type: object
+  1330.0xc00033bb60.false:
+    title: "false"
+    type: object
   models.Object:
     title: Object
     type: object
@@ -243,6 +268,18 @@ definitions:
         type: string
       Gender:
         type: string
+  models.Umb:
+    title: Umb
+    type: object
+    properties:
+      Event:
+        $ref: '#/definitions/1136.0xc00033bad0.false'
+      Menu:
+        $ref: '#/definitions/1330.0xc00033bb60.false'
+      Text:
+        type: string
+      XMLName:
+        $ref: '#/definitions/xml.Name'
   models.User:
     title: User
     type: object
@@ -255,6 +292,9 @@ definitions:
         $ref: '#/definitions/models.Profile'
       Username:
         type: string
+  xml.Name:
+    title: Name
+    type: object
 tags:
 - name: object
   description: |
@@ -262,3 +302,6 @@ tags:
 - name: user
   description: |
     Operations about Users
+- name: umb
+  description: |2
+     UmbController operations for Umb

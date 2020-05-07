@@ -52,6 +52,15 @@ func init() {
             Filters: nil,
             Params: nil})
 
+    beego.GlobalControllerRouter["umb_api/controllers:UmbController"] = append(beego.GlobalControllerRouter["umb_api/controllers:UmbController"],
+        beego.ControllerComments{
+            Method: "GetOne",
+            Router: `/:id`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["umb_api/controllers:UserController"] = append(beego.GlobalControllerRouter["umb_api/controllers:UserController"],
         beego.ControllerComments{
             Method: "Post",

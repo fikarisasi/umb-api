@@ -25,6 +25,11 @@ func init() {
 				&controllers.UserController{},
 			),
 		),
+		beego.NSNamespace("/umb",
+			beego.NSInclude(
+				&controllers.UmbController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }
