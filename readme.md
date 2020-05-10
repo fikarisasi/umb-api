@@ -44,3 +44,12 @@ End with an example of getting some data out of the system or using it for a lit
 ## Usage <a name = "usage"></a>
 
 Add notes about how to use the system.
+
+$ go get -u github.com/astaxie/beego
+$ go get -u github.com/beego/bee
+$ go get -u github.com/lib/pq
+
+
+$ bee run
+
+http://localhost:8080/UMB/Menu?MSISDN=6285892467164&mid=POSTPAID_SS&sc=123

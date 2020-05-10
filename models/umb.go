@@ -1,6 +1,12 @@
 package models
 
-import "encoding/xml"
+import (
+	"github.com/astaxie/beego"
+	"encoding/xml"
+	"github.com/astaxie/beego/orm"
+	"fmt"
+	"strconv"
+)
 
 type Umb struct {
 	XMLName xml.Name `xml:"umb"`
@@ -64,5 +70,56 @@ func GetUmbById(id int64) (v *Umb, err error) {
 		},
 	}
 	v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"", "NONE", "0", "Berlangganan Postpaid, Lebih Banyak Untung !", "", "superinternet", Items}}
+	return v, nil
+}
+
+func GetUmb(msisdn string, mid string, sc string) (v *Umb, err error) {
+
+	beego.Info("-------------Model - umb.go------------------------")
+
+	beego.Info("msisdn: ", msisdn)
+	beego.Info("mid: ", mid)
+	beego.Info("sc: ", sc)
+
+	orm.Debug = true
+    o := orm.NewOrm()
+    o.Using("default")
+    
+	header := UmbHeader{MenuId: mid}
+	
+	
+    err = o.Read(&header)
+    if err == orm.ErrMultiRows {
+        fmt.Printf("Returned Multi Rows Not One")
+    }
+    if err == orm.ErrNoRows {
+        fmt.Printf("Not row found")
+    }
+
+	Items :=[]Item{}
+	var maps []orm.Params
+
+    _, err = o.QueryTable("service_dyn_umb_menu").Filter("menu_id", mid).Values(&maps, "menu_id", "menu_detail_item")
+    if err == orm.ErrNoRows {
+        fmt.Println("No records")
+    } else if err == orm.ErrMissPK {
+        fmt.Println("No Primary Key")
+    } else {
+		for i, v := range maps {
+			detailItem, _ := v["MenuDetailItem"]
+			index := strconv.Itoa(i)
+			if str, ok := detailItem.(string); ok {
+				Items = append(Items, Item{
+					str, index , "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS1&amp;regamtmn=0&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=&amp;CELLID=999999&amp;param=", "0",
+				})
+			} else {
+				fmt.Println("q1q", ok)
+			}
+			
+			
+        }
+    } 
+
+	v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"", "NONE", "0", header.MenuHeader, "test header 2", "Test menuname", Items}}
 	return v, nil
 }

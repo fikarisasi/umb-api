@@ -33,3 +33,16 @@ func (c *UmbController) GetOne() {
 	}
 	c.ServeXML()
 }
+
+func (c *UmbController) GetMenu() {
+	msisdn := c.Ctx.Input.Query("MSISDN")
+	mid := c.Ctx.Input.Query("mid")
+	sc := c.Ctx.Input.Query("sc")
+	v, err := models.GetUmb(msisdn, mid, sc)
+	if err != nil {
+		c.Data["xml"] = err.Error()
+	} else {
+		c.Data["xml"] = v
+	}
+	c.ServeXML()
+}
