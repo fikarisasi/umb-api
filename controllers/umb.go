@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"encoding/xml"
 	"strconv"
 	"umb_api/models"
-	"github.com/astaxie/beego/httplib"
+
 	"github.com/astaxie/beego"
-	"encoding/xml"
+	"github.com/astaxie/beego/httplib"
 )
 
 //  UmbController operations for Umb
@@ -14,16 +15,16 @@ type UmbController struct {
 }
 
 type locRequest struct {
-	Tid  	string `xml:"tid"`
-	Msisdn  string `xml:"msisdn"`
-	Str 	string `xml:"str"`
-	V 		string `xml:"v"`
-	Action	string `xml:"action"`
-	Nodeid 	string `xml:"nodeid"`
+	Tid    string `xml:"tid"`
+	Msisdn string `xml:"msisdn"`
+	Str    string `xml:"str"`
+	V      string `xml:"v"`
+	Action string `xml:"action"`
+	Nodeid string `xml:"nodeid"`
 }
 
 type Result struct {
-	Value	string	`xml:"msisdn>CellID"`
+	Value string `xml:"msisdn>CellID"`
 }
 
 var MapGatewayGenericUrl = "http://10.34.234.180:8023/mapgw_generic/request_handler"
@@ -41,7 +42,11 @@ func (c *UmbController) GetOne() {
 	idStr := c.Ctx.Input.Query("MSISDN")
 	beego.Info(idStr)
 	id, _ := strconv.ParseInt(idStr, 0, 64)
-	v, err := models.GetUmbById(id)
+	msisdn := c.Ctx.Input.Query("MSISDN")
+	mid := c.Ctx.Input.Query("mid")
+	sc := c.Ctx.Input.Query("sc")
+	v, err := models.GetUmb(msisdn, mid, sc)
+	// v, err := models.GetUmbById(id)
 	data, err := BackendData(id)
 	if err != nil {
 		c.Data["xml"] = err.Error()
@@ -57,11 +62,11 @@ func (c *UmbController) GetOne() {
 // Get data from backend API MapGatewayGeneric
 func BackendData(id int64) (str string, err2 error) {
 	body := &locRequest{
-		Tid: "123", 
-		Msisdn: strconv.FormatInt(id, 10), 
-		Str: "EVENT", 
-		V: "1", 
-		Action: "H%2780000000", 
+		Tid:    "123",
+		Msisdn: strconv.FormatInt(id, 10),
+		Str:    "EVENT",
+		V:      "1",
+		Action: "H%2780000000",
 		Nodeid: "SDP",
 	}
 	req := httplib.Post(MapGatewayGenericUrl)
@@ -71,4 +76,17 @@ func BackendData(id int64) (str string, err2 error) {
 		beego.Info(err)
 	}
 	return str, nil
+}
+
+func (c *UmbController) GetMenu() {
+	msisdn := c.Ctx.Input.Query("MSISDN")
+	mid := c.Ctx.Input.Query("mid")
+	sc := c.Ctx.Input.Query("sc")
+	v, err := models.GetUmb(msisdn, mid, sc)
+	if err != nil {
+		c.Data["xml"] = err.Error()
+	} else {
+		c.Data["xml"] = v
+	}
+	c.ServeXML()
 }
