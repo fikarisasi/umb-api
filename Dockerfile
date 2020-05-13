@@ -6,6 +6,7 @@ RUN mkdir -p /go/src/github.com/openshift/umb_api
 WORKDIR /go/src/github.com/openshift/umb_api
 
 COPY . /go/src/github.com/openshift/umb_api
+RUN go env -w GO111MODULE=on
 RUN go mod init
 RUN go mod tidy
 RUN go build
