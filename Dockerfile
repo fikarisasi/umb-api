@@ -1,16 +1,11 @@
-FROM golang:latest
+FROM golang:1.11
 
 USER nobody
 
-WORKDIR /go/src/umb_api
-COPY . .
+RUN mkdir -p /go/src/github.com/openshift/umb-api
+WORKDIR /go/src/github.com/openshift/umb-api
 
-RUN go get -d -v ./...
-RUN go install -v ./...
-
-# COPY . /go/src/github.com/openshift/umb_api
-# RUN go env
-# RUN go env -w GO111MODULE=on
+COPY . /go/src/github.com/openshift/umb-api
 RUN go build
 
-CMD ["./umb_api"]
+CMD ["./umb-api"]
