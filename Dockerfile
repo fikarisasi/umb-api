@@ -2,10 +2,7 @@ FROM golang:latest
 
 USER nobody
 
-RUN mkdir /umb_api
-WORKDIR /umb_api
-COPY go.mod .
-COPY go.sum .
+WORKDIR /go/src/umb_api
 
 # Get dependancies - will also be cached if we won't change mod/sum
 RUN go mod download
