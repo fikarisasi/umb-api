@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "umb_api/routers"
+	_ "umb-api/routers"
 
 	"github.com/astaxie/beego"
 )
