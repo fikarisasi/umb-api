@@ -3,13 +3,10 @@ FROM golang:latest
 USER nobody
 
 WORKDIR /go/src/umb_api
-COPY go.mod .
-COPY go.sum .
-
-# Get dependancies - will also be cached if we won't change mod/sum
-RUN go mod download
-# COPY the source code as the last step
 COPY . .
+
+RUN go get -d -v ./...
+RUN go install -v ./...
 
 # COPY . /go/src/github.com/openshift/umb_api
 # RUN go env

@@ -74,7 +74,10 @@
           "type": "Git",
           "git": {
             "uri": "${SOURCE_REPOSITORY_URL}",
-            "ref": "${SOURCE_REPOSITORY_REF}"
+            "ref": "${SOURCE_REPOSITORY_REF}",
+            "sourceSecret": {
+              "name": "githubsshsecret"
+            }
           },
           "contextDir": "${CONTEXT_DIR}"
         },
@@ -166,7 +169,7 @@
     {
       "name": "SOURCE_REPOSITORY_URL",
       "description": "The URL of the repository with your application source code",
-      "value": "https://github.com/fikarisasi/umb-api.git"
+      "value": "https://github.ibm.com/OpenShiftISAT/umb-api.git"
     },
     {
       "name": "SOURCE_REPOSITORY_REF",
