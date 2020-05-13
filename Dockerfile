@@ -3,6 +3,8 @@ FROM golang:latest
 USER nobody
 
 WORKDIR /go/src/umb_api
+COPY go.mod .
+COPY go.sum .
 
 # Get dependancies - will also be cached if we won't change mod/sum
 RUN go mod download
