@@ -2,7 +2,7 @@ FROM golang:1.11
 
 USER nobody
 
-RUN mkdir -p /umb_api
+RUN mkdir /umb_api
 WORKDIR /umb_api
 COPY go.mod .
 COPY go.sum .
