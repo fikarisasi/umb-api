@@ -10,4 +10,4 @@ COPY . .
 
 RUN go build 
 
-CMD ["umb_api"]
+CMD ["./umb_api"]
