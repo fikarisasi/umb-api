@@ -41,6 +41,7 @@ func init() {
 	orm.RegisterDataBase(os.Getenv("postgresql_database-name"), "postgres", "user="+os.Getenv("postgresql_database-user")+" password="+os.Getenv("postgresql_database-password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database-name")+" sslmode=disable")
 	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu))
 	fmt.Println("------------Setting schema--------------------")
+	fmt.Println("user=" + os.Getenv("postgresql_database-user") + " password=" + os.Getenv("postgresql_database-password") + " host=" + os.Getenv("postgresql_host") + " port=" + "5432" + " dbname=" + os.Getenv("postgresql_database-name") + " sslmode=disable")
 	//设置scheme
 	o := orm.NewOrm()
 	o.Using(os.Getenv("postgresql_database-name")) // Using public, you can use other database
