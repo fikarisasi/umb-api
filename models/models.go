@@ -2,8 +2,8 @@ package models
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 
 	_ "github.com/lib/pq"
@@ -37,18 +37,20 @@ func (menu *UmbMenu) TableName() string {
 
 func init() {
 	orm.RegisterDriver("postgres", orm.DRPostgres)
-	orm.RegisterDataBase("default", "postgres", beego.AppConfig.String("sqlconn"))
-	orm.RegisterDataBase("umbdynamicdb", "postgres", beego.AppConfig.String("sqlconn"))
+	orm.RegisterDataBase("default", "postgres", "postgresql://"+os.Getenv("postgresql_database-user")+":"+os.Getenv("postgresql_database-password")+"@"+os.Getenv("postgresql_host")+":5432/postgres?sslmode=disable")
+	fmt.Println(os.Getenv("postgresql_database-name"))
+	fmt.Println("postgresql://" + os.Getenv("postgresql_database-user") + ":" + os.Getenv("postgresql_database-password") + "@" + os.Getenv("postgresql_host") + ":5432/postgres?sslmode=disable")
+	orm.RegisterDataBase(os.Getenv("postgresql_database-name"), "postgres", "postgresql://"+os.Getenv("postgresql_database-user")+":"+os.Getenv("postgresql_database-password")+"@"+os.Getenv("postgresql_host")+":5432/postgres?sslmode=disable")
 	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu))
 	fmt.Println("------------Setting schema--------------------")
 	//设置scheme
 	o := orm.NewOrm()
-	o.Using("umbdynamicdb") // Using public, you can use other database
+	o.Using(os.Getenv("postgresql_database-name")) // Using public, you can use other database
 	_, e := o.Raw("set search_path to ssp").Exec()
 	if e != nil {
 		panic(e)
 	}
 
-	orm.RunSyncdb("umbdynamicdb", false, true)
+	orm.RunSyncdb(os.Getenv("postgresql_database-name"), false, true)
 	fmt.Println("------------Setting schema Completed--------------------")
 }

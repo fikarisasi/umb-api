@@ -97,10 +97,7 @@
               "secret": "${GITHUB_WEBHOOK_SECRET}"
             }
           }
-        ],
-        "postCommit": {
-          "script": "go test -v ./..."
-        }
+        ]
       }
     },
     {
@@ -171,7 +168,7 @@
     {
       "name": "SOURCE_REPOSITORY_REF",
       "description": "Set this to a branch name, tag or other ref of your repository if you are not using the default branch",
-      "value": "deployment-preparation"
+      "value": "deployment-preparation-withpgsql"
     },
     {
       "name": "CONTEXT_DIR",
