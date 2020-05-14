@@ -79,7 +79,46 @@
           "contextDir": "${CONTEXT_DIR}"
         },
         "strategy": {
-          "type": "Docker"
+          "type": "Docker",
+          "dockerStrategy": {
+            "env": [
+              {
+                "name": "postgresql_host",
+                "value": "postgresql.indosat-umb-poc.svc.cluster.local"
+              },
+              {
+                "name": "postgresql_schema",
+                "value": "default"
+              },
+              {
+                "name": "postgresql_database-user",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "database-user",
+                    "name": "postgresql"
+                  }
+                }
+              },
+              {
+                "name": "postgresql_database-password",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "database-password",
+                    "name": "postgresql"
+                  }
+                }
+              },
+              {
+                "name": "postgresql_database-name",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "database-name",
+                    "name": "postgresql"
+                  }
+                }
+              }
+            ]
+          }
         },
         "output": {
           "to": {
@@ -97,7 +136,10 @@
               "secret": "${GITHUB_WEBHOOK_SECRET}"
             }
           }
-        ]
+        ],
+        "postCommit": {
+          "script": "go test -v ./..."
+        }
       }
     },
     {
@@ -150,6 +192,43 @@
                 "ports": [
                   {
                     "containerPort": 8080
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "postgresql_host",
+                    "value": "postgresql.indosat-umb-poc.svc.cluster.local"
+                  },
+                  {
+                    "name": "postgresql_schema",
+                    "value": "default"
+                  },
+                  {
+                    "name": "postgresql_database-user",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-user",
+                        "name": "postgresql"
+                      }
+                    }
+                  },
+                  {
+                    "name": "postgresql_database-password",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-password",
+                        "name": "postgresql"
+                      }
+                    }
+                  },
+                  {
+                    "name": "postgresql_database-name",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "key": "database-name",
+                        "name": "postgresql"
+                      }
+                    }
                   }
                 ]
               }

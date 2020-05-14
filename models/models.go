@@ -37,10 +37,8 @@ func (menu *UmbMenu) TableName() string {
 
 func init() {
 	orm.RegisterDriver("postgres", orm.DRPostgres)
-	orm.RegisterDataBase("default", "postgres", "postgresql://"+os.Getenv("postgresql_database-user")+":"+os.Getenv("postgresql_database-password")+"@"+os.Getenv("postgresql_host")+":5432/postgres?sslmode=disable")
-	fmt.Println(os.Getenv("postgresql_database-name"))
-	fmt.Println("postgresql://" + os.Getenv("postgresql_database-user") + ":" + os.Getenv("postgresql_database-password") + "@" + os.Getenv("postgresql_host") + ":5432/postgres?sslmode=disable")
-	orm.RegisterDataBase(os.Getenv("postgresql_database-name"), "postgres", "postgresql://"+os.Getenv("postgresql_database-user")+":"+os.Getenv("postgresql_database-password")+"@"+os.Getenv("postgresql_host")+":5432/postgres?sslmode=disable")
+	orm.RegisterDataBase(os.Getenv("postgresql_schema"), "postgres", "user="+os.Getenv("postgresql_database-user")+" password="+os.Getenv("postgresql_database-password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database-name")+" sslmode=disable")
+	orm.RegisterDataBase(os.Getenv("postgresql_database-name"), "postgres", "user="+os.Getenv("postgresql_database-user")+" password="+os.Getenv("postgresql_database-password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database-name")+" sslmode=disable")
 	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu))
 	fmt.Println("------------Setting schema--------------------")
 	//设置scheme
@@ -51,6 +49,6 @@ func init() {
 		panic(e)
 	}
 
-	orm.RunSyncdb(os.Getenv("postgresql_database-name"), false, true)
+	orm.RunSyncdb(os.Getenv("postgresql_schema"), false, true)
 	fmt.Println("------------Setting schema Completed--------------------")
 }
