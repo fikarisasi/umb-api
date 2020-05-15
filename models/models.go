@@ -5,6 +5,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+
 	_ "github.com/lib/pq"
 )
 
@@ -37,17 +38,17 @@ func (menu *UmbMenu) TableName() string {
 func init() {
 	orm.RegisterDriver("postgres", orm.DRPostgres)
 	orm.RegisterDataBase("default", "postgres", beego.AppConfig.String("sqlconn"))
-	orm.RegisterDataBase("public", "postgres", beego.AppConfig.String("sqlconn"))
+	orm.RegisterDataBase("umbdynamicdb", "postgres", beego.AppConfig.String("sqlconn"))
 	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu))
 	fmt.Println("------------Setting schema--------------------")
 	//设置scheme
 	o := orm.NewOrm()
-	o.Using("public") // Using public, you can use other database
+	o.Using("umbdynamicdb") // Using public, you can use other database
 	_, e := o.Raw("set search_path to ssp").Exec()
 	if e != nil {
 		panic(e)
 	}
 
-	orm.RunSyncdb("public", false, true)
+	orm.RunSyncdb("umbdynamicdb", false, true)
 	fmt.Println("------------Setting schema Completed--------------------")
 }
