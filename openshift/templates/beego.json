@@ -91,31 +91,16 @@
                 "value": "default"
               },
               {
-                "name": "postgresql_database-user",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "key": "database-user",
-                    "name": "postgresql"
-                  }
-                }
+                "name": "postgresql_database_user",
+                "value": "admin"
               },
               {
-                "name": "postgresql_database-password",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "key": "database-password",
-                    "name": "postgresql"
-                  }
-                }
+                "name": "postgresql_database_password",
+                "value": "abc123"
               },
               {
-                "name": "postgresql_database-name",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "key": "database-name",
-                    "name": "postgresql"
-                  }
-                }
+                "name": "postgresql_database_name",
+                "value": "umbdynamicdb"
               }
             ]
           }
@@ -204,31 +189,16 @@
                     "value": "default"
                   },
                   {
-                    "name": "postgresql_database-user",
-                    "valueFrom": {
-                      "secretKeyRef": {
-                        "key": "database-user",
-                        "name": "postgresql"
-                      }
-                    }
+                    "name": "postgresql_database_user",
+                    "value": "admin"
                   },
                   {
-                    "name": "postgresql_database-password",
-                    "valueFrom": {
-                      "secretKeyRef": {
-                        "key": "database-password",
-                        "name": "postgresql"
-                      }
-                    }
+                    "name": "postgresql_database_password",
+                    "value": "abc123"
                   },
                   {
-                    "name": "postgresql_database-name",
-                    "valueFrom": {
-                      "secretKeyRef": {
-                        "key": "database-name",
-                        "name": "postgresql"
-                      }
-                    }
+                    "name": "postgresql_database_name",
+                    "value": "umbdynamicdb"
                   }
                 ]
               }
