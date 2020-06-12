@@ -2,9 +2,10 @@ package models
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+
 	_ "github.com/lib/pq"
 )
 
@@ -36,18 +37,19 @@ func (menu *UmbMenu) TableName() string {
 
 func init() {
 	orm.RegisterDriver("postgres", orm.DRPostgres)
-	orm.RegisterDataBase("default", "postgres", beego.AppConfig.String("sqlconn"))
-	orm.RegisterDataBase("public", "postgres", beego.AppConfig.String("sqlconn"))
+	orm.RegisterDataBase(os.Getenv("postgresql_schema"), "postgres", "user="+os.Getenv("postgresql_database_user")+" password="+os.Getenv("postgresql_database_password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database_name")+" sslmode=disable")
+	orm.RegisterDataBase(os.Getenv("postgresql_database_name"), "postgres", "user="+os.Getenv("postgresql_database_user")+" password="+os.Getenv("postgresql_database_password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database_name")+" sslmode=disable")
 	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu))
 	fmt.Println("------------Setting schema--------------------")
+	fmt.Println("user=" + os.Getenv("postgresql_database_user") + " password=" + os.Getenv("postgresql_database_password") + " host=" + os.Getenv("postgresql_host") + " port=" + "5432" + " dbname=" + os.Getenv("postgresql_database_name") + " sslmode=disable")
 	//设置scheme
 	o := orm.NewOrm()
-	o.Using("public") // Using public, you can use other database
+	o.Using(os.Getenv("postgresql_database_name")) // Using public, you can use other database
 	_, e := o.Raw("set search_path to ssp").Exec()
 	if e != nil {
 		panic(e)
 	}
 
-	orm.RunSyncdb("public", false, true)
+	orm.RunSyncdb(os.Getenv("postgresql_schema"), false, true)
 	fmt.Println("------------Setting schema Completed--------------------")
 }
