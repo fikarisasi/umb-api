@@ -29,6 +29,12 @@ func (header *UmbHeader) TableName() string {
 type UmbMenu struct {
 	MenuId         string `orm:"column(menu_id);pk"`
 	MenuDetailItem string `orm:"column(menu_detail_item)"`
+	ItemNumber 	   string `orm:"column(item_number)"`
+	MenuNextId 	   string `orm:"column(menu_next_id)"`
+	RegAmount 	   string `orm:"column(reg_amount)"`
+	Unit 		   string `orm:"column(unit)"`
+	Formula 	   string `orm:"column(formula)"`
+	Keyword 	   string `orm:"column(keyword)"`
 }
 
 func (menu *UmbMenu) TableName() string {

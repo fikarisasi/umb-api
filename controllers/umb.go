@@ -45,7 +45,7 @@ func (c *UmbController) GetOne() {
 	msisdn := c.Ctx.Input.Query("MSISDN")
 	mid := c.Ctx.Input.Query("mid")
 	sc := c.Ctx.Input.Query("sc")
-	v, err := models.GetUmb(msisdn, mid, sc)
+	v, err := models.GetUmb(msisdn, mid, sc, mid, mid, mid)
 	// v, err := models.GetUmbById(id)
 	data, err := BackendData(id)
 	if err != nil {
@@ -82,7 +82,21 @@ func (c *UmbController) GetMenu() {
 	msisdn := c.Ctx.Input.Query("MSISDN")
 	mid := c.Ctx.Input.Query("mid")
 	sc := c.Ctx.Input.Query("sc")
-	v, err := models.GetUmb(msisdn, mid, sc)
+	cell := c.Ctx.Input.Query("CELLID")
+	regamtmn := c.Ctx.Input.Query("regamtmn")
+	sms := c.Ctx.Input.Query("sms")
+
+	if cell == "" {
+		res := Result{}
+		intMsisdn, _ := strconv.ParseInt(msisdn, 0, 64)
+		data, _ := BackendData(intMsisdn)
+		beego.Info(data)
+		xml.Unmarshal([]byte(data), &res)
+		beego.Info(res.Value)
+		cell = res.Value
+	}
+
+	v, err := models.GetUmb(msisdn, mid, sc, cell, regamtmn, sms)
 	if err != nil {
 		c.Data["xml"] = err.Error()
 	} else {
