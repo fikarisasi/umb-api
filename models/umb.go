@@ -6,6 +6,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	"fmt"
 	"strconv"
+	"strings"
+	// "github.com/astaxie/beego/httplib"
 )
 
 type Umb struct {
@@ -46,6 +48,8 @@ func init() {
 
 }
 
+var GetINMainInfoUrl = "http://10.147.114.5:8004/INServiceHandler/INBalance/GetINMainInfo_PS"
+
 // GetUmbById retrieves Umb by Id. Returns error if
 // Id doesn't exist
 func GetUmbById(id int64) (v *Umb, err error) {
@@ -73,13 +77,17 @@ func GetUmbById(id int64) (v *Umb, err error) {
 	return v, nil
 }
 
-func GetUmb(msisdn string, mid string, sc string) (v *Umb, err error) {
+func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, sms string) (v *Umb, err error) {
 
 	beego.Info("-------------Model - umb.go------------------------")
 
 	beego.Info("msisdn: ", msisdn)
 	beego.Info("mid: ", mid)
 	beego.Info("sc: ", sc)
+	beego.Info("cell: ", cell)
+	beego.Info("regamtmn: ", regamtmn)
+	beego.Info("sms: ", sms)
+	sms = strings.Replace(sms, " ", "%20", -1)
 
 	orm.Debug = true
     o := orm.NewOrm()
@@ -99,7 +107,7 @@ func GetUmb(msisdn string, mid string, sc string) (v *Umb, err error) {
 	Items :=[]Item{}
 	var maps []orm.Params
 
-    _, err = o.QueryTable("service_dyn_umb_menu").Filter("menu_id", mid).Values(&maps, "menu_id", "menu_detail_item")
+    _, err = o.QueryTable("service_dyn_umb_menu").Filter("menu_id", mid).OrderBy("item_number").Values(&maps, "menu_id", "menu_detail_item", "item_number", "menu_next_id", "reg_amount", "unit", "formula", "keyword")
     if err == orm.ErrNoRows {
         fmt.Println("No records")
     } else if err == orm.ErrMissPK {
@@ -107,11 +115,49 @@ func GetUmb(msisdn string, mid string, sc string) (v *Umb, err error) {
     } else {
 		for i, v := range maps {
 			detailItem, _ := v["MenuDetailItem"]
+			itemNumber, _ := v["ItemNumber"].(string)
+			nextId, _ := v["MenuNextId"].(string)
 			index := strconv.Itoa(i)
+			_ = index
+
+			// If amount exist, change parameter regamtmn
+			amount, _ := v["RegAmount"].(string)
+			unit, _ := v["Unit"].(string)
+			formula, _ := v["Formula"].(string)
+			final_amount_str := "0"
+			if amount != "" {
+				if formula != "" {
+					intAmount, _ := strconv.ParseInt(amount, 10, 0)
+					intFormula , _ := strconv.ParseInt(formula, 10, 0)
+					amount_str := (intAmount/intFormula)
+					final_amount_str = strconv.FormatInt(amount_str, 10) + unit
+					_ = final_amount_str
+				} else {
+					final_amount_str = amount
+				}
+			}
+
+			// If keyword exist, change parameter sms
+			keyword, _ := v["Keyword"].(string)
+			if keyword != "" && strings.Contains(keyword, "%") {
+				sms = keyword
+			}
+
+			// Insert Item 
 			if str, ok := detailItem.(string); ok {
-				Items = append(Items, Item{
-					str, index , "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS1&amp;regamtmn=0&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=&amp;CELLID=999999&amp;param=", "0",
-				})
+				if strings.Contains(str, "XXX") {
+					str = strings.Replace(str, "XXX", final_amount_str, -1)
+				}
+				if mid == "ENDOFPSS" {
+					sms = strings.Replace(sms, "__", "%20", -1)
+					Items = append(Items, Item{
+						str, itemNumber , "NONE", "0", "NEXT", "http://10.147.114.7:4080/PULLHandler/PullAPI_PS?origin=UMB&amp;sms=" + sms + "&amp;shortcode=123", "0",
+					})
+				} else {
+					Items = append(Items, Item{
+						str, itemNumber , "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=" + nextId + "&amp;regamtmn=" + final_amount_str + "&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=" + sms + "&amp;CELLID=" + cell + "&amp;param=", "0",
+					})
+				}
 			} else {
 				fmt.Println("q1q", ok)
 			}
@@ -120,6 +166,28 @@ func GetUmb(msisdn string, mid string, sc string) (v *Umb, err error) {
         }
     } 
 
-	v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"", "NONE", "0", header.MenuHeader, "test header 2", "Test menuname", Items}}
+    if regamtmn != "" {
+    	header.MenuHeader = strings.Replace(header.MenuHeader, "XXX", regamtmn, -1)
+    }
+	v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"", "NONE", "0", header.MenuHeader, "", "superinternet", Items}}
 	return v, nil
 }
+
+// Get data from backend API MapGatewayGeneric
+// func BackendData(id int64) (str string, err2 error) {
+// 	body := &locRequest{
+// 		Tid:    "123",
+// 		Msisdn: strconv.FormatInt(id, 10),
+// 		Str:    "EVENT",
+// 		V:      "1",
+// 		Action: "H%2780000000",
+// 		Nodeid: "SDP",
+// 	}
+// 	req := httplib.Post(MapGatewayGenericUrl)
+// 	req.XMLBody(body)
+// 	str, err := req.String()
+// 	if err != nil {
+// 		beego.Info(err)
+// 	}
+// 	return str, nil
+// }
