@@ -1,5 +1,7 @@
 FROM golang:1.14.2
 
+ADD . /go/src/umb_api
+ENV GO111MODULE=on
 WORKDIR /go/src/umb_api
 COPY go.mod .
 COPY go.sum .
