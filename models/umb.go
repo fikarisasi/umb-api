@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	// "github.com/astaxie/beego/httplib"
+	"github.com/astaxie/beego/httplib"
 )
 
 type Umb struct {
@@ -42,6 +42,25 @@ type Item struct {
 	Action       string `xml:"action,attr"`
 	URL          string `xml:"url,attr"`
 	DeliveryMode string `xml:"delivery_mode,attr"`
+}
+
+type Envelope struct {
+	XMLName xml.Name `xml:"soapenv:Envelope"`
+	Text    string   `xml:",chardata"`
+	Soapenv string   `xml:"xmlns:soapenv,attr"`
+	Body    struct {
+		Text                 string `xml:",chardata"`
+		GetINMainInfoRequest struct {
+			Text    string `xml:",chardata"`
+			Get     string `xml:"xmlns:get,attr"`
+			TransId string `xml:"transId"`
+			Msisdn  string `xml:"msisdn"`
+		} `xml:"get:GetINMainInfoRequest"`
+	} `xml:"soapenv:Body"`
+}
+
+type MainInfo struct {
+	MaBalance     string `xml:"Body>GetINMainInfoResponse>maBalance"`
 }
 
 func init() {
@@ -102,6 +121,14 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
     }
     if err == orm.ErrNoRows {
         fmt.Printf("Not row found")
+    }
+
+    // Check if Header has BALANCE to be replaced
+    if strings.Contains(header.MenuHeader, "%BALANCE%") {
+    	mainInfo := MainInfo{}
+    	balance, _ := GetINMainInfo(msisdn)
+		xml.Unmarshal([]byte(balance), &mainInfo)
+		header.MenuHeader = strings.Replace(header.MenuHeader, "%BALANCE%", mainInfo.MaBalance, -1)
     }
 
 	Items :=[]Item{}
@@ -173,21 +200,20 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 	return v, nil
 }
 
-// Get data from backend API MapGatewayGeneric
-// func BackendData(id int64) (str string, err2 error) {
-// 	body := &locRequest{
-// 		Tid:    "123",
-// 		Msisdn: strconv.FormatInt(id, 10),
-// 		Str:    "EVENT",
-// 		V:      "1",
-// 		Action: "H%2780000000",
-// 		Nodeid: "SDP",
-// 	}
-// 	req := httplib.Post(MapGatewayGenericUrl)
-// 	req.XMLBody(body)
-// 	str, err := req.String()
-// 	if err != nil {
-// 		beego.Info(err)
-// 	}
-// 	return str, nil
-// }
+// Get data from backend API GetINMainInfo
+func GetINMainInfo(id string) (str string, err2 error) {
+	body := &Envelope{
+		Soapenv:    "http://schemas.xmlsoap.org/soap/envelope/",
+	}
+	body.Body.GetINMainInfoRequest.Get = "http://www.example.org/GetINMainInfo/"
+	body.Body.GetINMainInfoRequest.TransId = "111"
+	body.Body.GetINMainInfoRequest.Msisdn = id
+
+	req := httplib.Post(GetINMainInfoUrl)
+	req.XMLBody(body)
+	str, err := req.String()
+	if err != nil {
+		beego.Info(err)
+	}
+	return str, nil
+}
