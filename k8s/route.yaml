@@ -1,0 +1,13 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: umb-api
+  name: umb-api
+spec:
+  port:
+    targetPort: 8080-tcp
+  to:
+    kind: Service
+    name: umb-api
+    weight: 100
