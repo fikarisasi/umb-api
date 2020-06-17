@@ -4,6 +4,8 @@ import (
 	"encoding/xml"
 	"strconv"
 	"umb_api/models"
+	"strings"
+	"regexp"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/httplib"
@@ -85,6 +87,21 @@ func (c *UmbController) GetMenu() {
 	cell := c.Ctx.Input.Query("CELLID")
 	regamtmn := c.Ctx.Input.Query("regamtmn")
 	sms := c.Ctx.Input.Query("sms")
+	sms = strings.Replace(sms, " ", "%20", -1)
+	
+	if mid == "OCODEPSS" && strings.Contains(sms, "%20") {
+		re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+		subString := strings.Split(sms, "%20")
+		email := subString[5]
+		
+		if re.MatchString(email) {
+
+		} else {
+			mid = "EMAILPSS_FALSE"
+		}
+		beego.Info(email)
+		beego.Info(mid)
+	}
 
 	if cell == "" {
 		res := Result{}
