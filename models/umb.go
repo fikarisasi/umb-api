@@ -14,7 +14,8 @@ type Umb struct {
 	XMLName xml.Name `xml:"umb"`
 	Text    string   `xml:",chardata"`
 	Event   Event    `xml:"event"`
-	Menu    Menu     
+	Menu    *Menu     `xml:",omitempty"`
+	Result  *Result   `xml:",omitempty"`
 }
 
 type Event struct {
@@ -25,14 +26,18 @@ type Event struct {
 }
 
 type Menu struct {
-	XMLName 		xml.Name 
+	XMLName 		xml.Name `xml:"menu"`
 	Tarifftype  	string `xml:"tarifftype,attr,omitempty"`
 	Tariffrate  	string `xml:"tariffrate,attr,omitempty"`
 	Menuheader1 	string `xml:"menuheader1,omitempty"`
-	Menuheader2 	string `xml:"menuheader2,omitempty"`
+	Menuheader2 	string `xml:"menuheader2"`
 	Menuname    	string `xml:"menuname,omitempty"`
-	Resultdata    	string `xml:"resultdata,omitempty"`
 	Item        	[]Item `xml:"item"`
+}
+
+type Result struct {
+	XMLName 		xml.Name `xml:"result"`
+	Resultdata    	string `xml:"resultdata,omitempty"`
 }
 
 type Item struct {
@@ -65,6 +70,7 @@ type MainInfo struct {
 }
 
 type CRSInfo struct {
+	Desc string `xml:"DESC"` 
     Name [] string `xml:"ATTRIBUTES>KEY>NAME"` 
 	Value [] string `xml:"ATTRIBUTES>KEY>VALUE"`
 }
@@ -132,6 +138,7 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 	header := UmbHeader{MenuId: mid}
 	msisdnNIK := ""
 	msisdnNOKK := ""
+	msisdnRegistered := ""
 	
     err = o.Read(&header)
     if err == orm.ErrMultiRows {
@@ -154,6 +161,11 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
     	crsInfo := CRSInfo{Name: [] string{} , Value: [] string{}}
     	crsValue, _ := CRSHandler(msisdn)
 	    xml.Unmarshal([]byte(crsValue), &crsInfo)
+
+	    // Check if MSISDN registered or not
+	    if crsInfo.Desc == "REGISTERED" {
+	    	msisdnRegistered = crsInfo.Desc
+	    }
 		
 		for i := range crsInfo.Name {
 		  	if(crsInfo.Name[i] == "NIK"){
@@ -218,6 +230,9 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 				if strings.Contains(str, "XXX") {
 					str = strings.Replace(str, "XXX", final_amount_str, -1)
 				}
+				if msisdnRegistered != "" && strings.Contains(final_sms, "%20DESC%20") {
+					final_sms = strings.Replace(final_sms, "DESC", msisdnRegistered, -1)
+				}
 				if msisdnNIK != "" && strings.Contains(final_sms, "%20NIK%20") {
 					final_sms = strings.Replace(final_sms, "NIK", msisdnNIK, -1)
 				}
@@ -251,8 +266,8 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 		Event: Event{"", "CPRespStatus", "SUCCESS", "0"},
 	}
 	if (xmlResult) {
-		v.Menu = Menu{
-			XMLName: xml.Name{ Local: "menu" },
+		v.Menu = &Menu{
+			// XMLName: xml.Name{ Local: "menu" },
 			Tarifftype: "NONE",
 			Tariffrate: "0",
 			Menuheader1: header.MenuHeader,
@@ -261,8 +276,8 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 			Item: Items,
 		}
 	} else {
-		v.Menu = Menu{
-			XMLName: xml.Name{ Local: "result" },
+		v.Result = &Result{
+			// XMLName: xml.Name{ Local: "result" },
 			Resultdata: header.MenuHeader,
 		}
 	}
