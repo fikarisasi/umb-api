@@ -219,7 +219,13 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 		_, err = o.QueryTable("service_dyn_umb_menu").Filter("menu_id", mid).OrderBy("item_number").Values(&maps, "menu_id", "menu_detail_item", "item_number", "menu_next_id", "reg_amount", "unit", "formula", "keyword")
 		cacheExpire := "120"
 		for j, m := range maps {
-			conn.Do("HSET", mid+":"+strconv.Itoa(j), "MenuDetailItem", m["MenuDetailItem"], "ItemNumber", m["ItemNumber"], "MenuNextId", m["MenuNextId"], "RegAmount", m["RegAmount"], "Unit", m["Unit"], "Formula", m["Formula"], "Keyword", m["Keyword"] )
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "MenuDetailItem", m["MenuDetailItem"] )
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "ItemNumber", m["ItemNumber"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "MenuNextId", m["MenuNextId"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "RegAmount", m["RegAmount"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "Unit", m["Unit"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "Formula", m["Formula"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "Formula", m["Formula"])
 			conn.Do("EXPIRE", mid+":"+strconv.Itoa(j), cacheExpire)
 			conn.Do("SET", mid, len(maps))
 			conn.Do("EXPIRE", mid, cacheExpire)
