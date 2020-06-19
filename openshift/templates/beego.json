@@ -217,7 +217,7 @@
     {
       "name": "SOURCE_REPOSITORY_REF",
       "description": "Set this to a branch name, tag or other ref of your repository if you are not using the default branch",
-      "value": "deployment-preparation-withpgsql"
+      "value": "master"
     },
     {
       "name": "CONTEXT_DIR",
@@ -226,7 +226,7 @@
     {
       "name": "APPLICATION_DOMAIN",
       "description": "The exposed hostname that will route to the Beego service",
-      "value": "umb-api.office.corp.indosat.com"
+      "value": "umb-api-poc.umbmenu-oc.office.corp.indosat.com"
     },
     {
       "name": "GITHUB_WEBHOOK_SECRET",
