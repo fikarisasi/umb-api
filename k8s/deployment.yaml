@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: umb-api
+    app: umb-api-test
   name: umb-api
 spec:
   replicas: 1
