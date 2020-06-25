@@ -6,6 +6,7 @@ import (
 	"umb_api/models"
 	"strings"
 	"regexp"
+	"encoding/json"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/httplib"
@@ -23,6 +24,11 @@ type locRequest struct {
 	V      string `xml:"v"`
 	Action string `xml:"action"`
 	Nodeid string `xml:"nodeid"`
+}
+
+type errorRes struct {
+	Category   	string `json:"category"`
+    Message 	error `json:"message"`
 }
 
 type Result struct {
@@ -75,7 +81,13 @@ func BackendData(id int64) (str string, err2 error) {
 	req.XMLBody(body)
 	str, err := req.String()
 	if err != nil {
-		beego.Info(err)
+		mggErrRes := &errorRes {
+			Category: "MapGatewayGeneric API Error",
+			Message: err,
+		}
+		mggErrResJSON, _ := json.Marshal(mggErrRes)
+    	beego.Error(string(mggErrResJSON))
+		beego.Error(mggErrRes)
 	}
 	return str, nil
 }

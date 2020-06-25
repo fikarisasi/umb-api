@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"encoding/json"
 	"github.com/astaxie/beego/httplib"
 )
 
@@ -48,6 +49,11 @@ type Item struct {
 	Action       string `xml:"action,attr"`
 	URL          string `xml:"url,attr"`
 	DeliveryMode string `xml:"delivery_mode,attr"`
+}
+
+type errorRes struct {
+	Category   	string `json:"category"`
+    Message 	error `json:"message"`
 }
 
 type Envelope struct {
@@ -297,7 +303,13 @@ func GetINMainInfo(id string) (str string, err2 error) {
 	req.XMLBody(body)
 	str, err := req.String()
 	if err != nil {
-		beego.Info(err)
+		ginmiErrRes := &errorRes {
+			Category: "GetINMainInfo API Error",
+			Message: err,
+		}
+		ginmiErrResJSON, _ := json.Marshal(ginmiErrRes)
+    	beego.Error(string(ginmiErrResJSON))
+		beego.Error(ginmiErrRes)
 	}
 	return str, nil
 }
@@ -317,7 +329,13 @@ func CRSHandler(id string) (str string, err2 error) {
 	req.XMLBody(body)
 	str, err := req.String()
 	if err != nil {
-		beego.Info(err)
+		crsErrRes := &errorRes {
+			Category: "SelfcareRegistrationStatus API Error",
+			Message: err,
+		}
+		crsErrResJSON, _ := json.Marshal(crsErrRes)
+    	beego.Error(string(crsErrResJSON))
+		beego.Error(crsErrRes)
 	}
 	return str, nil
 }
