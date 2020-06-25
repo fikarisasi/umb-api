@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"github.com/astaxie/beego/httplib"
+	"github.com/gomodule/redigo/redis"
 )
 
 type Umb struct {
@@ -188,7 +189,49 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 	Items :=[]Item{}
 	var maps []orm.Params
 
-    _, err = o.QueryTable("service_dyn_umb_menu").Filter("menu_id", mid).OrderBy("item_number").Values(&maps, "menu_id", "menu_detail_item", "item_number", "menu_next_id", "reg_amount", "unit", "formula", "keyword")
+	// Check redis cache
+	conn, err := redis.Dial("tcp", beego.AppConfig.String("redisconn"))
+	if err != nil {beego.Info(err)}
+	defer conn.Close()
+	_, errAuth := conn.Do("AUTH", beego.AppConfig.String("redispass"))
+	if errAuth != nil {beego.Info(err)}	
+	check, _ := redis.Int(conn.Do("EXISTS", mid))
+	if check == 1 {
+		// get data from redis cache
+		beego.Info("get data from redis cache")
+		len, _ := redis.Int(conn.Do("GET", mid))
+		maps = make([]orm.Params, len)
+		for i := 0; i < len; i++ {
+			result, _ := redis.StringMap(conn.Do("HGETALL", mid+":"+strconv.Itoa(i)))
+			maps[i] = make(map[string]interface{})
+			maps[i]["MenuDetailItem"] = result["MenuDetailItem"]
+			maps[i]["ItemNumber"] = result["ItemNumber"]
+			maps[i]["MenuNextId"] = result["MenuNextId"]
+			maps[i]["RegAmount"] = result["RegAmount"]
+			maps[i]["Unit"] = result["Unit"]
+			maps[i]["Formula"] = result["Formula"]
+			maps[i]["Keyword"] = result["Keyword"]
+		}
+		fmt.Println(maps)
+	} else {
+		// get data from database
+		beego.Info("get data from postgre db")
+		_, err = o.QueryTable("service_dyn_umb_menu").Filter("menu_id", mid).OrderBy("item_number").Values(&maps, "menu_id", "menu_detail_item", "item_number", "menu_next_id", "reg_amount", "unit", "formula", "keyword")
+		cacheExpire := "120"
+		for j, m := range maps {
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "MenuDetailItem", m["MenuDetailItem"] )
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "ItemNumber", m["ItemNumber"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "MenuNextId", m["MenuNextId"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "RegAmount", m["RegAmount"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "Unit", m["Unit"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "Formula", m["Formula"])
+			conn.Do("HSET", mid+":"+strconv.Itoa(j), "Formula", m["Formula"])
+			conn.Do("EXPIRE", mid+":"+strconv.Itoa(j), cacheExpire)
+			conn.Do("SET", mid, len(maps))
+			conn.Do("EXPIRE", mid, cacheExpire)
+		}
+	}
+
     if err == orm.ErrNoRows {
         fmt.Println("No records")
     } else if err == orm.ErrMissPK {
