@@ -98,16 +98,16 @@ func GetUmbById(id int64) (v *Umb, err error) {
 	// return nil, err
 	// Items := []Item{
 	// 	Item{
-	// 		"OK", "1", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS1&amp;regamtmn=0&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=&amp;CELLID=999999&amp;param=", "0",
+	// 		"OK", "1", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS1&regamtmn=0&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=&CELLID=999999&param=", "0",
 	// 	},
 	// 	Item{
-	// 		"Benefit Postpaid", "2", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS2&amp;regamtmn=0&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=&amp;CELLID=999999&amp;param=", "0",
+	// 		"Benefit Postpaid", "2", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS2&regamtmn=0&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=&CELLID=999999&param=", "0",
 	// 	},
 	// 	Item{
-	// 		"Status", "3", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS3&amp;regamtmn=0&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=&amp;CELLID=999999&amp;param=", "0",
+	// 		"Status", "3", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=POSTPAID_SS3&regamtmn=0&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=&CELLID=999999&param=", "0",
 	// 	},
 	// 	Item{
-	// 		"Info", "4", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=INFO_SS1&amp;regamtmn=0&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=&amp;CELLID=999999&amp;param=", "0",
+	// 		"Info", "4", "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=INFO_SS1&regamtmn=0&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=&CELLID=999999&param=", "0",
 	// 	},
 	// }
 	// v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"NONE", "0", "Berlangganan Postpaid, Lebih Banyak Untung !", "", "superinternet", Items}}
@@ -135,6 +135,8 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 	xmlResult := true
     o := orm.NewOrm()
     o.Using("default")
+
+    urlhost := "http://umbmenu-oc.office.corp.indosat.com/"
 
     // Checking Postpaid SS if any wrong format
     if strings.Contains(mid, "_FALSE") {
@@ -248,11 +250,11 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 				if mid == "ENDOFPSS" {
 					sms = strings.Replace(sms, "__", "%20", -1)
 					Items = append(Items, Item{
-						str, itemNumber , "NONE", "0", "NEXT", "http://10.147.114.7:4080/PULLHandler/PullAPI_PS?origin=UMB&amp;sms=" + final_sms + "&amp;shortcode=123", "0",
+						str, itemNumber , "NONE", "0", "NEXT", urlhost + "PULLHandler/PullAPI_PS?origin=UMB&sms=" + final_sms + "&shortcode=123", "0",
 					})
 				} else {
 					Items = append(Items, Item{
-						str, itemNumber , "NONE", "0", "NEXT", "http://10.147.114.7:4080/UMB/Menu?mid=" + nextId + "&amp;regamtmn=" + final_amount_str + "&amp;bam=&amp;bbm=&amp;bcm=&amp;bdm=&amp;bem=&amp;sc=123&amp;sms=" + final_sms + "&amp;CELLID=" + cell + "&amp;param=", "0",
+						str, itemNumber , "NONE", "0", "NEXT", urlhost + "UMB/Menu?mid=" + nextId + "&regamtmn=" + final_amount_str + "&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=" + final_sms + "&CELLID=" + cell + "&param=", "0",
 					})
 				}
 			} else {
