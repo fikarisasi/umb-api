@@ -155,6 +155,9 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
     if err == orm.ErrNoRows {
         fmt.Printf("Not row found")
     }
+    if mid == "" {
+    	header.MenuHeader = "Infomation not found"
+    }
 
     // Check if Header has BALANCE to be replaced
     if strings.Contains(header.MenuHeader, "%BALANCE%") {
@@ -267,6 +270,9 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 
     if regamtmn != "" {
     	header.MenuHeader = strings.Replace(header.MenuHeader, "XXX", regamtmn, -1)
+    }
+    if len(Items) == 0 {
+    	xmlResult = false
     }
 	// v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"", "NONE", "0", header.MenuHeader, "", "superinternet", Items}}
 	v = &Umb{
