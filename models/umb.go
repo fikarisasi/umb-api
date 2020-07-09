@@ -190,6 +190,12 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 		}
     }
 
+    // Check if Header has STATUS to be replaced
+    if strings.Contains(header.MenuHeader, "%STATUS%") {
+		// header.MenuHeader = strings.Replace(header.MenuHeader, "%STATUS%", "Belum Melakukan Pembelian", -1)
+		header.MenuHeader = "Infomation not found"
+    }
+
     // Check if Header has | 
     if strings.Contains(header.MenuHeader, "|") {
     	subPipeSring := strings.Split(header.MenuHeader, "|")
