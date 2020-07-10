@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: umb-api
+  name: umb-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: umb-api
+  template:
+    metadata:
+      labels:
+        app: umb-api
+    spec:
+      containers:
+        - image: quay.io/openshift-pipeline/umb-api:latest
+          imagePullPolicy: Always
+          name: umb-api
+          ports:
+            - containerPort: 8080
+              protocol: TCP

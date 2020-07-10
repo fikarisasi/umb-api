@@ -79,7 +79,31 @@
           "contextDir": "${CONTEXT_DIR}"
         },
         "strategy": {
-          "type": "Docker"
+          "type": "Docker",
+          "dockerStrategy": {
+            "env": [
+              {
+                "name": "postgresql_host",
+                "value": "postgresql.indosat-umb-poc.svc.cluster.local"
+              },
+              {
+                "name": "postgresql_schema",
+                "value": "default"
+              },
+              {
+                "name": "postgresql_database_user",
+                "value": "admin"
+              },
+              {
+                "name": "postgresql_database_password",
+                "value": "abc123"
+              },
+              {
+                "name": "postgresql_database_name",
+                "value": "umbdynamicdb"
+              }
+            ]
+          }
         },
         "output": {
           "to": {
@@ -154,6 +178,28 @@
                   {
                     "containerPort": 8080
                   }
+                ],
+                "env": [
+                  {
+                    "name": "postgresql_host",
+                    "value": "postgresql.indosat-umb-poc.svc.cluster.local"
+                  },
+                  {
+                    "name": "postgresql_schema",
+                    "value": "default"
+                  },
+                  {
+                    "name": "postgresql_database_user",
+                    "value": "admin"
+                  },
+                  {
+                    "name": "postgresql_database_password",
+                    "value": "abc123"
+                  },
+                  {
+                    "name": "postgresql_database_name",
+                    "value": "umbdynamicdb"
+                  }
                 ]
               }
             ]
@@ -171,7 +217,7 @@
     {
       "name": "SOURCE_REPOSITORY_REF",
       "description": "Set this to a branch name, tag or other ref of your repository if you are not using the default branch",
-      "value": "deployment-preparation"
+      "value": "deployment-preparation-withpgsql"
     },
     {
       "name": "CONTEXT_DIR",
