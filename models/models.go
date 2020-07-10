@@ -41,11 +41,20 @@ func (menu *UmbMenu) TableName() string {
 	return "service_dyn_umb_menu"
 }
 
+type PromoCodeSSP struct {
+	MenuId         string `orm:"column(menu_id)"`
+	PromoCode      string `orm:"column(promo_code);pk"`
+}
+
+func (promoCodeDB *PromoCodeSSP) TableName() string {
+	return "service_dyn_umb_prmcode"
+}
+
 func init() {
 	orm.RegisterDriver("postgres", orm.DRPostgres)
 	orm.RegisterDataBase(os.Getenv("postgresql_schema"), "postgres", "user="+os.Getenv("postgresql_database_user")+" password="+os.Getenv("postgresql_database_password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database_name")+" sslmode=disable")
 	orm.RegisterDataBase(os.Getenv("postgresql_database_name"), "postgres", "user="+os.Getenv("postgresql_database_user")+" password="+os.Getenv("postgresql_database_password")+" host="+os.Getenv("postgresql_host")+" port="+"5432"+" dbname="+os.Getenv("postgresql_database_name")+" sslmode=disable")
-	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu))
+	orm.RegisterModel(new(Article), new(UmbHeader), new(UmbMenu), new(PromoCodeSSP))
 	fmt.Println("------------Setting schema--------------------")
 	fmt.Println("user=" + os.Getenv("postgresql_database_user") + " password=" + os.Getenv("postgresql_database_password") + " host=" + os.Getenv("postgresql_host") + " port=" + "5432" + " dbname=" + os.Getenv("postgresql_database_name") + " sslmode=disable")
 	//设置scheme
