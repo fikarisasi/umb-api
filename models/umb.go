@@ -171,8 +171,8 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 	tid := GenerateTid(msisdn)
 	beego.Info("tid: "+tid)
 
-    // urlhost := "http://umbmenu-oc.office.corp.indosat.com/"
-    urlhost := "http://localhost:8080/"
+    urlhost := "http://umbmenu-oc.office.corp.indosat.com/"
+    // urlhost := "http://localhost:8080/"
 
     // Checking Process 2
     if strings.HasPrefix(mid, "LMS") {
