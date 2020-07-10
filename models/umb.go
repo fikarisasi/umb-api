@@ -5,10 +5,12 @@ import (
 	"encoding/xml"
 	"github.com/astaxie/beego/orm"
 	"fmt"
+	"time"
 	"strconv"
 	"strings"
 	"encoding/json"
 	"github.com/astaxie/beego/httplib"
+	// "os"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -63,17 +65,33 @@ type Envelope struct {
 	Soapenv string   `xml:"xmlns:soapenv,attr"`
 	Body    struct {
 		Text                 string `xml:",chardata"`
-		GetINMainInfoRequest struct {
-			Text    string `xml:",chardata"`
-			Get     string `xml:"xmlns:get,attr"`
-			TransId string `xml:"transId"`
-			Msisdn  string `xml:"msisdn"`
-		} `xml:"get:GetINMainInfoRequest"`
+		GetINMainInfoRequest 	*GetINMainInfoRequest     	`xml:",omitempty"`
+		GetPromoCodeInput 		*GetPromoCodeInput     		`xml:",omitempty"`
 	} `xml:"soapenv:Body"`
 }
 
+type GetINMainInfoRequest struct {
+	XMLName xml.Name `xml:"get:GetINMainInfoRequest"`
+	Text    string `xml:",chardata"`
+	Get     string `xml:"xmlns:get,attr"`
+	TransId string `xml:"transId"`
+	Msisdn  string `xml:"msisdn"`
+} 
+
+type GetPromoCodeInput struct {
+	XMLName xml.Name `xml:"get:GetPromoCodeInput"`
+	Text    string `xml:",chardata"`
+	Get     string `xml:"xmlns:get,attr"`
+	Msisdn  string `xml:"get:msisdn"`
+	Transid string `xml:"get:transid"`
+} 
+
 type MainInfo struct {
 	MaBalance     string `xml:"Body>GetINMainInfoResponse>maBalance"`
+}
+
+type PromoInfo struct {
+	ProCode     string `xml:"Body>GetPromoCodeOutputCollection>GetPromoCodeOutput>package_code"`
 }
 
 type CRSInfo struct {
@@ -87,6 +105,7 @@ func init() {
 }
 
 var GetINMainInfoUrl = "http://10.147.114.5:8004/INServiceHandler/INBalance/GetINMainInfo_PS"
+var GetPromoCodeUrl = "http://10.147.114.5:8004/RBMHandler/ProxyService/GetPromoCodeHttpPS"
 
 // GetUmbById retrieves Umb by Id. Returns error if
 // Id doesn't exist
@@ -120,7 +139,7 @@ func GetUmbById(id int64) (v *Umb, err error) {
 	return v, nil
 }
 
-func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, sms string) (v *Umb, err error) {
+func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, userinput string, sms string) (v *Umb, err error) {
 
 	beego.Info("-------------Model - umb.go------------------------")
 
@@ -137,7 +156,72 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
     o := orm.NewOrm()
     o.Using("default")
 
-    urlhost := "http://umbmenu-oc.office.corp.indosat.com/"
+    // MPP Parameter
+    tmpSubsData := ""
+    nomorUrut := 1
+
+    // Promo Code Parameter
+    prmCode := ""
+    sspTransSatus := ""
+
+    // $parameter Parameter
+    // parameter := ""
+
+	// Get tid
+	tid := GenerateTid(msisdn)
+	beego.Info("tid: "+tid)
+
+    // urlhost := "http://umbmenu-oc.office.corp.indosat.com/"
+    urlhost := "http://localhost:8080/"
+
+    // Checking Process 2
+    if strings.HasPrefix(mid, "LMS") {
+    	// To be analyzed and implemented later
+    	beego.Info("In LMS")
+    } else if mid == "MPP" || mid == "MPP_GROUPIN" {
+    	beego.Info("MPP")
+    	_ = tmpSubsData
+    	_ = nomorUrut
+    	// Invoke Subscription Query
+
+    } else if mid == "GIFTL3" || mid == "POSTPAID_SS3_1" {
+    	beego.Info("GIFTL3")
+
+    	if strings.HasPrefix(userinput, "08") {
+    		userinput = strings.Replace(userinput, "08", "628", 1)
+    	}
+    	if userinput == "" {
+    		userinput = msisdn
+    	}
+
+    	// "1" to be replaced with Tid
+    	proInfo := PromoInfo{}
+    	promoCode, err := GetPromoCode(userinput, tid)
+    	if err != nil {
+			beego.Info(err)
+		}
+		xml.Unmarshal([]byte(promoCode), &proInfo)
+
+		if proInfo.ProCode != "0" {
+			promoCodeDB := PromoCodeSSP{PromoCode: proInfo.ProCode}
+			err = o.Read(&promoCodeDB)
+
+			if err == orm.ErrNoRows {
+			    fmt.Println("No result found.")
+			} else if err == orm.ErrMissPK {
+			    fmt.Println("No primary key found.")
+			} else {
+			    fmt.Println(promoCodeDB.MenuId, promoCodeDB.PromoCode)
+			}
+
+			if promoCodeDB.MenuId != "" {
+				mid = promoCodeDB.MenuId
+				prmCode = "AVAILABLE"
+			} else {
+				prmCode = "NOT AVAILABLE"
+			}
+		}
+    }
 
     // Checking Postpaid SS if any wrong format
     if strings.Contains(mid, "_FALSE") {
@@ -156,12 +240,18 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
     if err == orm.ErrNoRows {
         fmt.Printf("Not row found")
     }
+    if mid == "" {
+    	header.MenuHeader = "Infomation not found"
+    }
 
     // Check if Header has BALANCE to be replaced
     if strings.Contains(header.MenuHeader, "%BALANCE%") {
     	mainInfo := MainInfo{}
-    	balance, _ := GetINMainInfo(msisdn)
+    	balance, _ := GetINMainInfo(msisdn, tid)
 		xml.Unmarshal([]byte(balance), &mainInfo)
+		if mainInfo.MaBalance == "" {
+			mainInfo.MaBalance = "0"
+		}
 		header.MenuHeader = strings.Replace(header.MenuHeader, "%BALANCE%", mainInfo.MaBalance, -1)
     }
 
@@ -186,6 +276,21 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 	        	header.MenuHeader = strings.Replace(header.MenuHeader, "%NOKK%", msisdnNOKK, -1)
 	        }
 		}
+    }
+
+    // Check if Header has STATUS to be replaced
+    if mid == "POSTPAID_SS3_1" && strings.Contains(header.MenuHeader, "%STATUS%") {
+    	statusPostpaid := ""
+    	if prmCode == "AVAILABLE" {
+    		statusPostpaid = "Sukses"
+    	} else if prmCode == "" && sspTransSatus == "0" {
+    		statusPostpaid = "Dalam Proses"
+    	} else if prmCode == "" {
+    		statusPostpaid = "Belum Melakukan Pembelian"
+    	} else {
+    		statusPostpaid = "Tidak Berhasil"
+    	}
+		header.MenuHeader = strings.Replace(header.MenuHeader, "%STATUS%", statusPostpaid, -1)
     }
 
     // Check if Header has | 
@@ -297,7 +402,7 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 					})
 				} else {
 					Items = append(Items, Item{
-						str, itemNumber , "NONE", "0", "NEXT", urlhost + "UMB/Menu?mid=" + nextId + "&regamtmn=" + final_amount_str + "&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=" + final_sms + "&CELLID=" + cell + "&param=", "0",
+						str, itemNumber , "NONE", "0", "NEXT", urlhost + "UMB/Menu?MSISDN=" + msisdn + "&mid=" + nextId + "&regamtmn=" + final_amount_str + "&bam=&bbm=&bcm=&bdm=&bem=&sc=123&sms=" + final_sms + "&CELLID=" + cell + "&param=", "0",
 					})
 				}
 			} else {
@@ -310,6 +415,9 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 
     if regamtmn != "" {
     	header.MenuHeader = strings.Replace(header.MenuHeader, "XXX", regamtmn, -1)
+    }
+    if len(Items) == 0 {
+    	xmlResult = false
     }
 	// v = &Umb{xml.Name{}, "", Event{"", "CPRespStatus", "SUCCESS", "0"}, Menu{"", "NONE", "0", header.MenuHeader, "", "superinternet", Items}}
 	v = &Umb{
@@ -336,17 +444,20 @@ func GetUmb(msisdn string, mid string, sc string, cell string, regamtmn string, 
 }
 
 // Get data from backend API GetINMainInfo
-func GetINMainInfo(id string) (str string, err2 error) {
+func GetINMainInfo(id string, tid string) (str string, err2 error) {
 	body := &Envelope{
 		Soapenv:    "http://schemas.xmlsoap.org/soap/envelope/",
 	}
-	body.Body.GetINMainInfoRequest.Get = "http://www.example.org/GetINMainInfo/"
-	body.Body.GetINMainInfoRequest.TransId = "111"
-	body.Body.GetINMainInfoRequest.Msisdn = id
+	body.Body.GetINMainInfoRequest = &GetINMainInfoRequest{
+		Get: "http://www.example.org/GetINMainInfo/",
+		TransId: tid,
+		Msisdn: id,
+	}
 
 	req := httplib.Post(GetINMainInfoUrl)
 	req.XMLBody(body)
 	str, err := req.String()
+	beego.Info(str)
 	if err != nil {
 		ginmiErrRes := &errorRes {
 			Category: "GetINMainInfo API Error",
@@ -359,14 +470,44 @@ func GetINMainInfo(id string) (str string, err2 error) {
 	return str, nil
 }
 
+// Get data from backend API GetPromoCode
+func GetPromoCode(id string, tid string) (str string, err2 error) {
+	body := &Envelope{
+		Soapenv:    "http://schemas.xmlsoap.org/soap/envelope/",
+	}
+	body.Body.GetPromoCodeInput = &GetPromoCodeInput{
+		Get: "http://indosatooredoo.com/ngssp/schema/GetPromoCode",
+		Transid: tid,
+		Msisdn: id,
+	}
+	// xmlBody, _ := xml.MarshalIndent(body, "  ", "    ")
+	// os.Stdout.Write(xmlBody)
+	req := httplib.Post(GetPromoCodeUrl)
+	req.XMLBody(body)
+	str, err := req.String()
+	beego.Info(str)
+	if err != nil {
+		gprocodeErrRes := &errorRes {
+			Category: "GetPromoCodeInput API Error",
+			Message: err,
+		}
+		gprocodeErrResJSON, _ := json.Marshal(gprocodeErrRes)
+    	beego.Error(string(gprocodeErrResJSON))
+		beego.Error(gprocodeErrResJSON)
+	}
+	return str, nil
+}
+
 // Get data from backend API CRSHandler
 func CRSHandler(id string) (str string, err2 error) {
 	body := &Envelope{
 		Soapenv:    "http://schemas.xmlsoap.org/soap/envelope/",
 	}
-	body.Body.GetINMainInfoRequest.Get = "http://www.example.org/GetINMainInfo/"
-	body.Body.GetINMainInfoRequest.TransId = "111"
-	body.Body.GetINMainInfoRequest.Msisdn = id
+	body.Body.GetINMainInfoRequest = &GetINMainInfoRequest{
+		Get: "http://www.example.org/GetINMainInfo/",
+		TransId: "111",
+		Msisdn: id,
+	}
 
 	var CRSHandlerUrl = "http://10.34.36.68:8080/SelfcareRegistrationStatus/" + id + "?clientId=USSD&cred=d8dd050b3d326872ef50301047b04125"
 
@@ -383,4 +524,11 @@ func CRSHandler(id string) (str string, err2 error) {
 		beego.Error(crsErrRes)
 	}
 	return str, nil
+}
+
+// Function to generate tid
+func GenerateTid(msisdn string) (str string) {
+	t := time.Now()
+	value := msisdn+t.Format("20060102150405")
+	return value
 }
